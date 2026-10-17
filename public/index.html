@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Taskmaster</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <h1>Taskmaster</h1>
+    <input id="search" type="search" placeholder="Buscar por ID o título…">
+    <select id="filter-type"><option value="">Todos los tipos</option></select>
+    <button id="new-task" class="primary">+ Nueva tarea</button>
+  </header>
+  <main id="board" aria-live="polite"></main>
+
+  <dialog id="create-dialog">
+    <form method="dialog" id="create-form">
+      <h2>Nueva tarea</h2>
+      <label>Tipo <select id="create-type" name="type"></select></label>
+      <label>Título <input name="title" required></label>
+      <div id="create-fields"></div>
+      <p class="error" id="create-error" role="alert"></p>
+      <div class="actions">
+        <button type="button" data-close>Cancelar</button>
+        <button type="submit" class="primary">Crear</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="detail-dialog">
+    <div id="detail"></div>
+    <div class="actions"><button type="button" data-close>Cerrar</button></div>
+  </dialog>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

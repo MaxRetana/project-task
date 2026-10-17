@@ -74,3 +74,12 @@ test('no permite salir de public/', async () => {
   const res = await fetch(`${base}/..%2Fpackage.json`);
   assert.notEqual(res.status, 200);
 });
+
+test('sirve la interfaz web', async () => {
+  for (const [path, type] of [['/', 'text/html'], ['/app.js', 'text/javascript'], ['/style.css', 'text/css']]) {
+    const res = await fetch(base + path);
+    assert.equal(res.status, 200, path);
+    assert.match(res.headers.get('content-type'), new RegExp(type));
+  }
+  assert.match(await (await fetch(base + '/')).text(), /Taskmaster/);
+});
