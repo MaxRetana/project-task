@@ -6,7 +6,7 @@
   "bin": { "taskmaster": "./bin/taskmaster.js" },
   "scripts": {
     "start": "node bin/taskmaster.js serve",
-    "test": "node --test test/"
+    "test": "node --test"
   },
   "engines": { "node": ">=20" },
   "license": "MIT"
