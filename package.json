@@ -1,0 +1,13 @@
+{
+  "name": "taskmaster",
+  "version": "0.1.0",
+  "description": "Gestor de tareas local tipo Jira, con ramas y PRs de git vinculados",
+  "type": "module",
+  "bin": { "taskmaster": "./bin/taskmaster.js" },
+  "scripts": {
+    "start": "node bin/taskmaster.js serve",
+    "test": "node --test"
+  },
+  "engines": { "node": ">=20" },
+  "license": "MIT"
+}
