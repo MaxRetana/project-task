@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync, renameSync, existsSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, renameSync, existsSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { homedir } from 'node:os';
 import { STATUSES, TYPES, ValidationError, validateFields } from './schema.js';
@@ -24,9 +24,16 @@ export class Store {
   constructor(file = defaultDataFile()) {
     this.file = file;
     this.data = { nextId: 1, tasks: [] };
-    if (existsSync(file)) {
-      this.data = JSON.parse(readFileSync(file, 'utf8'));
-    }
+    this.#refresh();
+  }
+
+  // Relee el archivo si otro proceso (CLI o servidor) lo modificó.
+  #refresh() {
+    if (!existsSync(this.file)) return;
+    const mtime = statSync(this.file).mtimeMs;
+    if (mtime === this.mtime) return;
+    this.data = JSON.parse(readFileSync(this.file, 'utf8'));
+    this.mtime = mtime;
   }
 
   // Escritura atómica: archivo temporal + rename, para no corromper datos.
@@ -35,9 +42,11 @@ export class Store {
     const tmp = `${this.file}.${process.pid}.tmp`;
     writeFileSync(tmp, JSON.stringify(this.data, null, 2));
     renameSync(tmp, this.file);
+    this.mtime = statSync(this.file).mtimeMs;
   }
 
   create({ type, title, fields, labels, status = 'todo' }) {
+    this.#refresh();
     if (!title || !String(title).trim()) throw new ValidationError('El título es obligatorio');
     if (!STATUSES.includes(status)) throw new ValidationError(`Estado inválido: ${status}`);
     const now = new Date().toISOString();
@@ -61,6 +70,7 @@ export class Store {
   }
 
   get(id) {
+    this.#refresh();
     const nid = normalizeId(id);
     const task = this.data.tasks.find((t) => t.id === nid);
     if (!task) throw new NotFoundError(nid);
@@ -68,6 +78,7 @@ export class Store {
   }
 
   list({ type, status, q } = {}) {
+    this.#refresh();
     const needle = q?.toLowerCase();
     return this.data.tasks.filter(
       (t) =>
@@ -78,6 +89,7 @@ export class Store {
   }
 
   update(id, patch) {
+    this.#refresh();
     const task = this.get(id);
     if (patch.title !== undefined) {
       if (!String(patch.title).trim()) throw new ValidationError('El título es obligatorio');
@@ -97,6 +109,7 @@ export class Store {
   }
 
   delete(id) {
+    this.#refresh();
     const task = this.get(id);
     this.data.tasks = this.data.tasks.filter((t) => t !== task);
     this.#save();
